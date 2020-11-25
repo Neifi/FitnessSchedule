@@ -3,8 +3,6 @@ package es.neifi.schedule.controller;
 import es.neifi.schedule.model.Schedule;
 import es.neifi.schedule.repository.ScheduleRepository;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
@@ -32,6 +30,7 @@ public class ScheduleController{
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
+    @PostMapping("/create")
     public ResponseEntity<Schedule> createSchedule(@NonNull @RequestBody Schedule scheduleBody){
 
         scheduleRepository.save(scheduleBody);
@@ -39,18 +38,21 @@ public class ScheduleController{
         return  ResponseEntity.ok(scheduleBody);
     }
 
+
     private void haveNullValues(Schedule scheduleBody){
         if (scheduleBody.getId() == null && scheduleBody.getScheduleName() == null)
             throw new RuntimeException("ID and name of schedule cannot be empty ");
     }
 
-    public ResponseEntity<Schedule> updateSchedule(@NonNull @RequestBody Schedule scheduleBody, @NonNull Long id){
+    @PutMapping("/update/{id}")
+    public ResponseEntity<Schedule> updateSchedule(@NonNull @RequestBody Schedule scheduleBody, @NonNull @PathVariable Long id){
         scheduleRepository.update(scheduleBody,id);
         Schedule result = findOne(id).getBody();
         if (result == null) throw new  RuntimeException("Cannot get the schedule");
         return ResponseEntity.ok(result);
     }
 
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<HttpStatus> deleteSchedule(@NonNull @PathVariable Long id){
         Optional<Schedule> toDelete = scheduleRepository.findById(id);
         deleteFitnessClasses(toDelete.orElseThrow(RuntimeException::new));
@@ -60,9 +62,7 @@ public class ScheduleController{
     }
 
     private void deleteFitnessClasses(Schedule toDelete) {
-        toDelete.getFitnessClasses().forEach(e -> {
-            toDelete.removeFitnessClass(e.getId());
-        });
+        toDelete.getFitnessClasses().forEach(e -> toDelete.removeFitnessClass(e.getId()));
 
     }
 
