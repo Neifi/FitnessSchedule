@@ -1,0 +1,27 @@
+version: '3.1'
+services:
+  app:
+    image: fitnessclassschdule
+    build: ./
+    expose:
+      - "8080"
+    depends_on:
+      - dbpostgresql
+
+  dbpostgresql:
+
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=mydb
+  loadbalancer:
+    image: 'dockercloud/haproxy:latest'
+    links:
+      - app
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - '80:80'
